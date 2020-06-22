@@ -34,11 +34,6 @@ public class Main {
         return heroesArray;
     }
 
-    public static void showHero(int i, ArrayList<Hero> heroesArray){
-        System.out.println("№ " + i + " Имя: " + heroesArray.get(i-1).getName() + "; Weapon: " +
-                heroesArray.get(i-1).getWeapon() + "; Power: "+ heroesArray.get(i-1).getPower()); // выводим имена
-    }
-
     //основной метод старта турнира
     public static Hero startTurik(ArrayList heroesArray){
         int numberOfHeroes; //количество победителей
@@ -72,38 +67,40 @@ public class Main {
     public static ArrayList<Hero> startCombat(ArrayList <Hero> battlers, int numberOfHeroes){
         ArrayList<Hero> winners = new ArrayList<>(); //создаем список победителей
         int j = 0; //обнуление списка героев
-        int N = 0;
+        //начинаем цикл боёвок по раундам
         for (int i = 1; i <= (numberOfHeroes/2); i++) {
             //выводим каждый бой
-            System.out.println("Бой №"+ (i + 1 + N));
+            System.out.println("Бой №"+ (i + 1));
+            // выводим соперников в консоль ( надо бы убрать в отдельный метод)
             System.out.println(battlers.get(j).getName() + " (Health: " + battlers.get(j).getHealth() +
                     ") VS " + battlers.get(j + 1).getName() + " (Health: " + battlers.get(j + 1).getHealth() + ")");
-            winners.add(heroesCombat(battlers.get(j), battlers.get(j + 1)));
+            Hero winner = heroesCombat(battlers.get(j), battlers.get(j + 1));// определяем победителя
+            winners.add(winner); //добавляем победителя в список
             j += 2;
-
         }
-        return winners;
+        return winners; //возвращаем список победителей
     }
 
     //метод для схватки героев
     public static Hero heroesCombat(Hero hero1, Hero hero2){
-        Hero winner = null;
+        Hero winner = null; //пустой победитель
         int heroHealth_1= hero1.getHealth();
         int heroHealth_2= hero2.getHealth();
-        int punch;
+        int punch; //урон атаки
 
+        //запускаем цикл сражения
         while (heroHealth_1 >= 0 && heroHealth_2 >= 0){
             try {
                 Thread.sleep(1000);
-            } catch (InterruptedException e) {
+            } catch (InterruptedException e) {}
 
-            }
-            punch = punchDamage(hero1);
+            punch = punchDamage(hero1); // определяем урон и крит первого
             System.out.println("Игрок №1 (" + hero1.getName() + ") атакует на " + punch + " урона. Здоровье героя №2 : " + (heroHealth_2 -= punch ));
             try {
                 Thread.sleep(1500);
             } catch (InterruptedException e) { }
-            punch = punchDamage(hero2);
+
+            punch = punchDamage(hero2);// определяем урон и крит второго
             System.out.println("Игрок №2 (" + hero2.getName() + ") атакует на " + punch  + " урона. Здоровье героя №1: " + (heroHealth_1 -= punch ));
         }
 
@@ -119,32 +116,31 @@ public class Main {
             switch (a) {
                 case 0:
                     System.out.println("Победил первый боец: " + hero1.getName());
-                    winner = hero1;
-                    return winner;
+                    return hero1;
 
                 case 1:
                     System.out.println("Победил второй боец: " + hero2.getName());
-                    winner = hero2;
-                    return winner;
+                    return hero2;
 
 
                 default:
                     System.out.println("Накосячил с рандомом");
-
+                    break;
             }
-        } return winner;
+        } return null;
 
     }
+    //рассчитываем урон удара
     public static int punchDamage(Hero hero){
         int punch;
         boolean isCrit;
         int isCritChance;
         punch = (int)(Math.random()*3 +(hero.getPower()));
-        isCritChance= (int)(Math.random()*10+1);
+        isCritChance= (int)(Math.random()*10+1); // 10% шанс крита
         isCrit = (isCritChance == 10 ? false : true);
             if(!isCrit){
                 System.out.println("КРИТ!!");
-                punch*=2;
+                punch*=2; //крит это увсиление удара на 2
             }
         return punch;
     }
@@ -165,6 +161,7 @@ class Hero {
         this.health= 100;
         this.weapon = "cock";
     }
+
     public Hero(String name,int health){
         this.name = name;
         this.health=health;
@@ -200,12 +197,14 @@ class Hero {
         return weapon;
     }
 
+    //генерация случайного персонажа (не знаю почему я реализовал именно так, можно было через конструктор. Видимо для разнообразия
     public static Hero createRandomHero (){
         Hero newHero = new Hero(Hero.randomName(true, null),randomHealth());
         newHero.giveWeapon(newHero);
         return newHero;
     }
 
+    //информация о герое
     public static void showHeroInfo(Hero hero){
         System.out.println("Имя: " + hero.getName() + "; Weapon: " + hero.getWeapon() + "; Power: "+ hero.getPower()); // выводим имена
     }
@@ -221,27 +220,28 @@ class Hero {
         }*/
         return name;
     }
+
     //выдача случайного оружия из списка
     public void giveWeapon(Hero hero){
-
-        String[] heroWeapon = Weapon.chooseWeapon(Weapon.createWeaponList());
-        String weapon = heroWeapon[0];
-        hero.setWeapon(weapon);
-        int power = Integer.parseInt(heroWeapon[1]);
-        hero.setPower(power);
+        String [][] weaponList = Weapon.createWeaponList(); //создаём массив с оружиями
+        String[] heroWeapon = Weapon.chooseWeapon(weaponList); //выбираем случайный элемент из массива
+        hero.setWeapon(heroWeapon[0]); //выдаем оружие герою
+        int power = Integer.parseInt(heroWeapon[1]); // переводим строковое значение из массивы в численное
+        hero.setPower(power); // записываем мощь героя
 
     }
+    //случайно определяем хп героев
     public static int randomHealth(){
-        int health= (int) (Math.random()*99+1) ;
+        int health= (int) (Math.random()*20+20) ;
         return health;
     }
 }
-
+//создаём класс оружий
 class Weapon{
-    protected String name;
+    //protected String name;
     protected String type;
     protected  int power;
-    protected int durability;
+    //protected int durability;
 
 
         public static String[][] createWeaponList(){
@@ -266,32 +266,32 @@ class Weapon{
         }
 
 
-        public static String randomWeapon(){
+       /* public static String randomWeapon(){
             String [] heroWeapons = {"Sword", "Axe", "Bow", "Spear", "Fists","Knife","Stuff"};
             String weapon= heroWeapons[(int)(Math.random()*6)];
             return weapon;
-        }
+        }*/
 
     Weapon(){
-        this.name="default";
+       // this.name="default";
         this.type="default";
         this.power=1;
-        this.durability=1;
+       // this.durability=1;
     }
 
     Weapon(String type, int power){
-        this.name="default";
+      //  this.name="default";
         this.type=type;
         this.power=power;
-        this.durability=1;
+       // this.durability=1;
     }
 
-    public String setName(){
+    /*public String setName(){
         return name;
     }
     public String getName(String name){
         return name;
-    }
+    }*/
     public String setType(){
         return type;
     }
@@ -305,11 +305,11 @@ class Weapon{
         return power;
     }
 
+/*
     public static Weapon getRandomWeapon(){
         Weapon weapon = new Weapon();
-
-
         return weapon;
     }
+*/
 
 }
